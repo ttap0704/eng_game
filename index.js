@@ -16,7 +16,16 @@ const arr = [
 let answer = [];
 let answer_ids = [];
 let answer_coordinate = [];
-let question = [];
+let question = [
+  ["*", "*", "*", "*", "*", "*"],
+  ["*", "home", "cup", "family", "컵", "*"],
+  ["*", "남자", "girl", "mouse", "사과", "*"],
+  ["*", "가다", "go", "add", "boy", "*"],
+  ["*", "woman", "가족", "apple", "man", "*"],
+  ["*", "back", "집", "소녀", "소년", "*"],
+  ["*", "더하기", "뒤", "마우스", "여자", "*"],
+  ["*", "*", "*", "*", "*", "*"],
+];
 
 function shuffle(array) {
   let currentIndex = array.length,
@@ -86,47 +95,86 @@ function findCourse() {
   const second_answer =
     question[answer_coordinate[1][0]][answer_coordinate[1][1]];
 
-  const first_left =
-    question[answer_coordinate[0][0]][answer_coordinate[0][1] - 1];
-  const first_up =
-    question[answer_coordinate[0][0] - 1][answer_coordinate[0][1]];
-  const first_right =
-    question[answer_coordinate[0][0]][answer_coordinate[0][1] + 1];
-  const first_down =
-    question[answer_coordinate[0][0] + 1][answer_coordinate[0][1]];
+  const first_x = answer_coordinate[0][0];
+  const first_y = answer_coordinate[0][1];
+  const second_x = answer_coordinate[1][0];
+  const second_y = answer_coordinate[1][1];
 
-  const second_left =
-    question[answer_coordinate[1][0]][answer_coordinate[1][1] - 1];
-  const second_up =
-    question[answer_coordinate[1][0] - 1][answer_coordinate[1][1]];
-  const second_right =
-    question[answer_coordinate[1][0]][answer_coordinate[1][1] + 1];
-  const second_down =
-    question[answer_coordinate[1][0] + 1][answer_coordinate[1][1]];
+  const around = {
+    first_left: question[first_x][first_y - 1],
+    first_up: question[first_x - 1][first_y],
+    first_right: question[first_x][first_y + 1],
+    first_down: question[first_x + 1][first_y],
+    second_left: question[second_x][second_y - 1],
+    second_up: question[second_x - 1][second_y],
+    second_right: question[second_x][second_y + 1],
+    second_down: question[second_x + 1][second_y],
+  };
 
-  // 하나라도 모두 막혀있을 때
-  if (
-    (first_left != "*") &&
-      (first_up != "*") &&
-      (first_right != "*") &&
-      (first_down != "*") &&
-    (second_left != "*") &&
-      (second_up != "*") &&
-      (second_right != "*") &&
-      (second_down != "*")
-  ) {
-    alert("정답까지 가지 못합니다.");
+  const dir_arr = ["left", "up", "right", "down"];
+  const num_arr = ["first", "second"];
+
+  for (const dir1 of dir_arr) {
+    for (const dir2 of dir_arr) {
+      // 붙어있는 정답 체크
+      const check_near_item = arr.find((item) => {
+        return (
+          (around[`first_${dir1}`] == item.mean &&
+            around[`second_${dir2}`] == item.word) ||
+          (around[`first_${dir1}`] == item.word &&
+            around[`second_${dir2}`] == item.mean)
+        );
+      });
+      if (check_near_item) {
+        setRightAnswer();
+        return;
+      }
+    }
+
+    if (around[`first_${dir1}`] == "*") {
+      let move = 1;
+      let change_dir_cnt = 0;
+
+      let target = around[`first_${dir1}`];
+      let right_answer = false;
+      while (!right_answer) {
+        let target_x = null;
+        let target_y = null;
+        if (dir1 == "left") {
+          target_y = first_y - move;
+        } else if (dir1 == "up") {
+          target_x = first_x - move;
+        } else if (dir1 == "right") {
+          target_y = first_y + move;
+        } else if (dir1 == "down") {
+          target_x = first_x + move;
+        }
+        if (question[target_x]) {
+          target = question[target_x][target_y];
+        } else {
+          change_dir_cnt++;
+          
+          console.log(target);
+        }
+        if (move == 100) {
+          right_answer = true;
+        }
+        move++;
+      }
+    }
   }
-
-  
 }
 
-function init(arr, max) {
-  const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
-  question = makeQuestionArray(arr, random_keys_arr, max);
+function setRightAnswer() {
+  alert("정답입니다!");
+  question[answer_coordinate[0][0]][answer_coordinate[0][1]] = "*";
+  question[answer_coordinate[1][0]][answer_coordinate[1][1]] = "*";
+  setQuestion();
+}
 
+function setQuestion() {
   const wrap = document.getElementById("wrap");
-
+  wrap.innerHTML = "";
   for (let i = 0, leng = question.length; i < leng; i++) {
     const x = question[i];
     const row = document.createElement("div");
@@ -150,6 +198,12 @@ function init(arr, max) {
 
     wrap.append(row);
   }
+}
+
+function init(arr, max) {
+  const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
+  // question = makeQuestionArray(arr, random_keys_arr, max);
+  setQuestion();
 }
 
 function onClickTarget(x, y, question_number) {
