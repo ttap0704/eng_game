@@ -18,8 +18,8 @@ let answer_ids = [];
 let answer_coordinate = [];
 let question = [
   ["*", "*", "*", "*", "*", "*"],
-  ["*", "home", "cup", "family", "컵", "*"],
-  ["*", "남자", "girl", "mouse", "사과", "*"],
+  ["*", "home", "cup", "family", "*", "*"],
+  ["*", "남자", "girl", "mouse", "컵", "*"],
   ["*", "가다", "go", "add", "boy", "*"],
   ["*", "woman", "가족", "apple", "man", "*"],
   ["*", "back", "집", "소녀", "소년", "*"],
@@ -100,6 +100,8 @@ function findCourse() {
   const second_x = answer_coordinate[1][0];
   const second_y = answer_coordinate[1][1];
 
+  console.log(first_x, first_y);
+
   const around = {
     first_left: question[first_x][first_y - 1],
     first_up: question[first_x - 1][first_y],
@@ -113,6 +115,25 @@ function findCourse() {
 
   const dir_arr = ["left", "up", "right", "down"];
   const num_arr = ["first", "second"];
+
+  const change_dir_arr = [];
+  if (first_x < second_x) {
+    change_dir_arr.push("down");
+  } else if (first_x > second_x) {
+    change_dir_arr.push("up");
+  } else {
+    change_dir_arr.push(null);
+  }
+
+  if (first_y < second_y) {
+    change_dir_arr.push("right");
+  } else if (first_y > second_y) {
+    change_dir_arr.push("left");
+  } else {
+    change_dir_arr.push(null);
+  }
+
+  console.log(change_dir_arr)
 
   for (const dir1 of dir_arr) {
     for (const dir2 of dir_arr) {
@@ -132,34 +153,82 @@ function findCourse() {
     }
 
     if (around[`first_${dir1}`] == "*") {
-      let move = 1;
+      let x_move = 1;
+      let y_move = 1;
+      let check_cnt = 0;
       let change_dir_cnt = 0;
-
+      let target_dir = dir1;
       let target = around[`first_${dir1}`];
       let right_answer = false;
+      let checked_answer = "";
+
+      let target_x = first_x;
+      let target_y = first_y;
       while (!right_answer) {
-        let target_x = null;
-        let target_y = null;
-        if (dir1 == "left") {
-          target_y = first_y - move;
-        } else if (dir1 == "up") {
-          target_x = first_x - move;
-        } else if (dir1 == "right") {
-          target_y = first_y + move;
-        } else if (dir1 == "down") {
-          target_x = first_x + move;
+        if (target_dir == "left") {
+          target_y = first_y - y_move;
+        } else if (target_dir == "up") {
+          target_x = first_x - x_move;
+        } else if (target_dir == "right") {
+          target_y = first_y + y_move;
+        } else if (target_dir == "down") {
+          target_x = first_x + x_move;
         }
+        
         if (question[target_x]) {
           target = question[target_x][target_y];
+
+          if (
+            question[target_x][target_y - 1]
+            // second_answer == question[target_x][target_y - 1]
+          )
+            // checked_answer = question[target_x][target_y - 1];
+            console.log(question[target_x][target_y - 1]);
+          if (
+            question[target_x - 1] &&
+            question[target_x - 1][target_y]
+            // second_answer == question[target_x - 1][target_y]
+          )
+            // checked_answer = question[target_x - 1][target_y];
+            console.log(question[target_x - 1][target_y]);
+          if (
+            question[target_x][target_y + 1]
+            // second_answer == question[target_x][target_y + 1]
+          )
+            // checked_answer = question[target_x][target_y + 1];
+            console.log(question[target_x][target_y + 1]);
+          if (
+            question[target_x + 1] &&
+            question[target_x + 1][target_y]
+            // second_answer == question[target_x + 1][target_y]
+          )
+            // checked_answer = question[target_x + 1][target_y];
+            console.log(question[target_x + 1][target_y]);
+
+          if (checked_answer.length > 0) {
+            console.log(checked_answer);
+            right_answer = true;
+          }
+          if (check_cnt > 100) right_answer = true;
+          if (["left", "right"].includes(target_dir)) {
+            y_move++;
+          } else {
+            x_move++;
+          }
         } else {
           change_dir_cnt++;
-          
-          console.log(target);
+          if (["left", "right"].includes(target_dir)) {
+            target_dir = change_dir_arr[0];
+          } else {
+            target_dir = change_dir_arr[1];
+          }
+
+          if (!target_dir) break;
+          if (change_dir_cnt > 5) {
+            right_answer = true;
+          }
         }
-        if (move == 100) {
-          right_answer = true;
-        }
-        move++;
+        check_cnt++;
       }
     }
   }
