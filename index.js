@@ -14,18 +14,11 @@ const arr = [
 ];
 
 let answer = [];
+let answer_arr = [];
 let answer_ids = [];
 let answer_coordinate = [];
-let question = [
-  ["*", "*", "*", "*", "*", "*"],
-  ["*", "home", "cup", "family", "*", "*"],
-  ["*", "남자", "girl", "mouse", "컵", "*"],
-  ["*", "가다", "go", "add", "boy", "*"],
-  ["*", "woman", "가족", "apple", "man", "*"],
-  ["*", "back", "집", "소녀", "소년", "*"],
-  ["*", "더하기", "뒤", "마우스", "여자", "*"],
-  ["*", "*", "*", "*", "*", "*"],
-];
+let question = [];
+let ok_cnt = 0;
 
 function shuffle(array) {
   let currentIndex = array.length,
@@ -62,19 +55,53 @@ function makeQuestionArray(arr, random_keys_arr, max) {
         row.push("*");
       } else {
         const cur_idx = random_keys_arr[j - 1 + i * max];
-        const target = arr[Math.abs(Math.ceil(cur_idx / 2 - 0.5))];
+        const target_idx = Math.abs(Math.ceil(cur_idx / 2 - 0.5));
+        const target = arr[target_idx];
+
         if (cur_idx % 2 == 0) {
+          const find_mean_idx = answer_arr.findIndex(
+            (item) => item.mean == target.mean
+          );
+          if (find_mean_idx >= 0) {
+            answer_arr[find_mean_idx].word_idx = [i + 1, j];
+          } else {
+            answer_arr.push({ ...target, word_idx: [i + 1, j] });
+          }
           row.push(target.word);
         } else {
+          const find_word_idx = answer_arr.findIndex(
+            (item) => item.word == target.word
+          );
+          if (find_word_idx >= 0) {
+            answer_arr[find_word_idx].mean_idx = [i + 1, j];
+          } else {
+            answer_arr.push({ ...target, mean_idx: [i + 1, j] });
+          }
           row.push(target.mean);
         }
       }
     }
     quetion_arr.push(row);
   }
+
   quetion_arr.unshift(getEmptyArray(max));
   quetion_arr.push(getEmptyArray(max));
-  return quetion_arr;
+  return { quetion_arr, answer_arr };
+}
+
+function checkPossibleQuetions(check_arr) {
+  let possible_cnt = 0;
+  const answer_arr = check_arr.map((item) => [
+    [...item.word_idx],
+    [...item.mean_idx],
+  ]);
+
+  for (const idx_arr of answer_arr) {
+    const possible_res = findCourse(idx_arr);
+    if (possible_res) possible_cnt++;
+  }
+
+  return possible_cnt;
 }
 
 function checkAnswer() {
@@ -89,18 +116,18 @@ function checkAnswer() {
   else return false;
 }
 
-function findCourse() {
+function findCourse(check_arr) {
+  const target_coordinate = check_arr ? check_arr : answer_coordinate;
+
   const first_answer =
-    question[answer_coordinate[0][0]][answer_coordinate[0][1]];
+    question[target_coordinate[0][0]][target_coordinate[0][1]];
   const second_answer =
-    question[answer_coordinate[1][0]][answer_coordinate[1][1]];
+    question[target_coordinate[1][0]][target_coordinate[1][1]];
 
-  const first_x = answer_coordinate[0][0];
-  const first_y = answer_coordinate[0][1];
-  const second_x = answer_coordinate[1][0];
-  const second_y = answer_coordinate[1][1];
-
-  console.log(first_x, first_y);
+  let first_x = target_coordinate[0][0];
+  let first_y = target_coordinate[0][1];
+  let second_x = target_coordinate[1][0];
+  let second_y = target_coordinate[1][1];
 
   const around = {
     first_left: question[first_x][first_y - 1],
@@ -116,126 +143,229 @@ function findCourse() {
   const dir_arr = ["left", "up", "right", "down"];
   const num_arr = ["first", "second"];
 
-  const change_dir_arr = [];
-  if (first_x < second_x) {
-    change_dir_arr.push("down");
-  } else if (first_x > second_x) {
-    change_dir_arr.push("up");
-  } else {
-    change_dir_arr.push(null);
-  }
-
-  if (first_y < second_y) {
-    change_dir_arr.push("right");
-  } else if (first_y > second_y) {
-    change_dir_arr.push("left");
-  } else {
-    change_dir_arr.push(null);
-  }
-
-  console.log(change_dir_arr)
-
   for (const dir1 of dir_arr) {
-    for (const dir2 of dir_arr) {
+    let course_arr = [];
+    if (
+      [second_x - 1, second_x + 1, second_x].includes(first_x) &&
+      [second_y - 1, second_x + 1, second_y].includes(first_y)
+    ) {
       // 붙어있는 정답 체크
       const check_near_item = arr.find((item) => {
         return (
-          (around[`first_${dir1}`] == item.mean &&
-            around[`second_${dir2}`] == item.word) ||
-          (around[`first_${dir1}`] == item.word &&
-            around[`second_${dir2}`] == item.mean)
+          ([
+            around["first_left"],
+            around["first_up"],
+            around["first_right"],
+            around["first_down"],
+          ].includes(item.word) &&
+            first_answer == item.mean) ||
+          ([
+            around["first_left"],
+            around["first_up"],
+            around["first_right"],
+            around["first_down"],
+          ].includes(item.mean) &&
+            first_answer == item.word)
         );
       });
       if (check_near_item) {
-        setRightAnswer();
+        if (check_arr) {
+          return true;
+        } else {
+          setRightAnswer();
+        }
         return;
       }
     }
+    console.log(question.length, question[0].length);
 
-    if (around[`first_${dir1}`] == "*") {
-      let x_move = 1;
-      let y_move = 1;
+    // for (const target_num of ["first", "second"]) {
+    let target = around[`first_${dir1}`];
+    if (target == "*") {
+      let x_move = 0;
+      let y_move = 0;
       let check_cnt = 0;
       let change_dir_cnt = 0;
       let target_dir = dir1;
-      let target = around[`first_${dir1}`];
+      let changed_dir = "";
       let right_answer = false;
-      let checked_answer = "";
 
       let target_x = first_x;
       let target_y = first_y;
+
+      let check_border_x = false;
+      let check_border_y = false;
+      if ([1, question.length - 2].includes(second_x)) {
+        check_border_x = true;
+      }
+      if ([1, question[0].length - 2].includes(second_y)) {
+        check_border_y = true;
+      }
+
       while (!right_answer) {
+        let checked_answer = "";
+        if (["left", "right"].includes(target_dir)) {
+          y_move++;
+        } else {
+          x_move++;
+        }
+
+        let need_change = false;
         if (target_dir == "left") {
+          if (target_y < second_y) need_change = true;
           target_y = first_y - y_move;
         } else if (target_dir == "up") {
+          if (target_x < second_x) need_change = true;
           target_x = first_x - x_move;
         } else if (target_dir == "right") {
+          if (target_y > second_y) need_change = true;
           target_y = first_y + y_move;
         } else if (target_dir == "down") {
+          if (target_x > second_x) need_change = true;
           target_x = first_x + x_move;
         }
-        
-        if (question[target_x]) {
+
+        console.log(dir1, target_dir, target_x, target_y, x_move, y_move);
+        if (
+          !need_change &&
+          question[target_x] &&
+          question[target_x][target_y] &&
+          question[target_x][target_y] == "*"
+        ) {
           target = question[target_x][target_y];
 
-          if (
-            question[target_x][target_y - 1]
-            // second_answer == question[target_x][target_y - 1]
-          )
-            // checked_answer = question[target_x][target_y - 1];
-            console.log(question[target_x][target_y - 1]);
-          if (
-            question[target_x - 1] &&
-            question[target_x - 1][target_y]
-            // second_answer == question[target_x - 1][target_y]
-          )
-            // checked_answer = question[target_x - 1][target_y];
-            console.log(question[target_x - 1][target_y]);
-          if (
-            question[target_x][target_y + 1]
-            // second_answer == question[target_x][target_y + 1]
-          )
-            // checked_answer = question[target_x][target_y + 1];
-            console.log(question[target_x][target_y + 1]);
-          if (
-            question[target_x + 1] &&
-            question[target_x + 1][target_y]
-            // second_answer == question[target_x + 1][target_y]
-          )
-            // checked_answer = question[target_x + 1][target_y];
-            console.log(question[target_x + 1][target_y]);
+          if (dir1 == target_dir) {
+            course_arr.push({ x: target_x, y: target_y, dir: dir1 });
+          } else {
+            const check_idx = course_arr.findIndex(
+              (item) => item.dir == `${dir1}_${target_dir}`
+            );
+            if (check_idx >= 0) {
+              course_arr.push({
+                x: target_x,
+                y: target_y,
+                dir: target_dir,
+              });
+            } else {
+              course_arr.push({
+                x: target_x,
+                y: target_y,
+                dir: `${dir1}_${target_dir}`,
+              });
+            }
+          }
+
+          let answer_dir = "";
+
+          if (change_dir_cnt < 2) {
+            if (
+              question[target_x][target_y - 1] &&
+              second_answer == question[target_x][target_y - 1]
+            ) {
+              answer_dir = "left";
+              checked_answer = question[target_x][target_y - 1];
+            }
+
+            if (
+              question[target_x - 1] &&
+              question[target_x - 1][target_y] &&
+              second_answer == question[target_x - 1][target_y]
+            ) {
+              answer_dir = "up";
+              checked_answer = question[target_x - 1][target_y];
+            }
+
+            if (
+              question[target_x][target_y + 1] &&
+              second_answer == question[target_x][target_y + 1]
+            ) {
+              answer_dir = "right";
+              checked_answer = question[target_x][target_y + 1];
+            }
+
+            if (
+              question[target_x + 1] &&
+              question[target_x + 1][target_y] &&
+              second_answer == question[target_x + 1][target_y]
+            ) {
+              answer_dir = "down";
+              checked_answer = question[target_x + 1][target_y];
+            }
+          } else {
+            if (question[target_x][target_y] != "*") {
+              answer_dir = target_dir;
+              checked_answer = question[target_x][target_y];
+            }
+          }
 
           if (checked_answer.length > 0) {
-            console.log(checked_answer);
-            right_answer = true;
-          }
-          if (check_cnt > 100) right_answer = true;
-          if (["left", "right"].includes(target_dir)) {
-            y_move++;
-          } else {
-            x_move++;
+            if (change_dir_cnt <= 2) {
+              if (check_arr) {
+                console.log(check_arr);
+                return true;
+              } else {
+                course_arr.push({
+                  x: target_x,
+                  y: target_y,
+                  dir: `${target_dir}_${answer_dir}`,
+                });
+
+                right_answer = true;
+                setRightAnswer();
+                console.log(course_arr, checked_answer, change_dir_cnt);
+                return;
+              }
+            } else {
+              right_answer = true;
+              console.log(course_arr, checked_answer, change_dir_cnt, "??");
+              break;
+            }
           }
         } else {
           change_dir_cnt++;
+
+          // console.log(target_x, second_x, target_y, second_y, target_dir);
           if (["left", "right"].includes(target_dir)) {
-            target_dir = change_dir_arr[0];
-          } else {
-            target_dir = change_dir_arr[1];
+            if (target_dir == "left") target_y++;
+            else if (target_dir == "right") target_y--;
+            if (target_x > second_x) {
+              target_dir = "up";
+            } else if (target_x < second_x) {
+              target_dir = "down";
+            }
+            // first_y = target_y;
+            // y_move = 0;
+            // x_move++;
+          } else if (["up", "down"].includes(target_dir)) {
+            if (target_dir == "up") target_x++;
+            else if (target_dir == "down") target_x--;
+            if (target_y > second_y) {
+              target_dir = "left";
+            } else if (target_y < second_y) {
+              target_dir = "right";
+            }
+            // first_x = target_x;
+            // x_move = 0;
+            // y_move++;
           }
 
           if (!target_dir) break;
-          if (change_dir_cnt > 5) {
-            right_answer = true;
-          }
+        }
+        if (check_cnt > 100) {
+          right_answer = true;
         }
         check_cnt++;
       }
     }
+    // }
   }
+
+  if (check_arr) return false;
 }
 
 function setRightAnswer() {
   alert("정답입니다!");
+  ok_cnt++;
   question[answer_coordinate[0][0]][answer_coordinate[0][1]] = "*";
   question[answer_coordinate[1][0]][answer_coordinate[1][1]] = "*";
   setQuestion();
@@ -270,8 +400,15 @@ function setQuestion() {
 }
 
 function init(arr, max) {
-  const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
-  // question = makeQuestionArray(arr, random_keys_arr, max);
+  let check_count = 0;
+  while (!(check_count > 3)) {
+    const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
+    const question_res = makeQuestionArray(arr, random_keys_arr, max);
+    question = question_res.quetion_arr;
+    const check_arr = question_res.answer_arr;
+    check_count = checkPossibleQuetions(check_arr);
+  }
+  console.log(check_count);
   setQuestion();
 }
 
