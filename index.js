@@ -225,7 +225,7 @@ function findCourse(check_arr) {
           target_x = first_x + x_move;
         }
 
-        console.log(dir1, target_dir, target_x, target_y, x_move, y_move);
+        // console.log(dir1, target_dir, target_x, target_y, x_move, y_move);
         if (
           !need_change &&
           question[target_x] &&
@@ -324,7 +324,6 @@ function findCourse(check_arr) {
         } else {
           change_dir_cnt++;
 
-          // console.log(target_x, second_x, target_y, second_y, target_dir);
           if (["left", "right"].includes(target_dir)) {
             if (target_dir == "left") target_y++;
             else if (target_dir == "right") target_y--;
@@ -333,9 +332,6 @@ function findCourse(check_arr) {
             } else if (target_x < second_x) {
               target_dir = "down";
             }
-            // first_y = target_y;
-            // y_move = 0;
-            // x_move++;
           } else if (["up", "down"].includes(target_dir)) {
             if (target_dir == "up") target_x++;
             else if (target_dir == "down") target_x--;
@@ -344,9 +340,6 @@ function findCourse(check_arr) {
             } else if (target_y < second_y) {
               target_dir = "right";
             }
-            // first_x = target_x;
-            // x_move = 0;
-            // y_move++;
           }
 
           if (!target_dir) break;
@@ -400,6 +393,7 @@ function setQuestion() {
 }
 
 function init(arr, max) {
+  console.log(wrap)
   let check_count = 0;
   while (!(check_count > 3)) {
     const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
@@ -424,7 +418,7 @@ function onClickTarget(x, y, question_number) {
   answer_coordinate.push([x, y]);
 
   const el = document.getElementById(`question_${question_number}`);
-  el.style.border = "1px solid red";
+  el.style.border = "1.5px solid red";
 
   setTimeout(() => {
     if (answer.length == 2) {
