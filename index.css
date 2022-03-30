@@ -1,0 +1,46 @@
+* {
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#wrap {
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #e3e3e3;
+}
+
+#wrap > .row {
+  display: flex;
+}
+
+#wrap > .row:not(:last-of-type) {
+  border-bottom: 1px solid #e3e3e3;
+}
+
+#wrap > .row > .cell {
+  width: 5rem;
+  height: 7.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.25s ease-in-out;
+}
+
+#wrap > .row > .target {
+  cursor: pointer;
+}
+
+#wrap > .row > .target:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
