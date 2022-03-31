@@ -116,6 +116,39 @@ function checkAnswer() {
   else return false;
 }
 
+function checkLine(dir, t_x, t_y, f_x, f_y, s_x, s_y) {
+  let next_dir = '';
+  if (['left', 'right'].includes(dir)) {
+    if (f_x > s_x) next_dir = "up";
+    else if (f_x < s_x) next_dir = "down";
+
+    if (next_dir == 'up') {
+      for (let i = t_x; i <= s_x; i++) {
+        if (question[i] && question[i][t_y] != '*') return false;
+      }
+    } else if (next_dir == 'down') {
+      for (let i = t_x; i >= s_x; i--) {
+        if (question[i] && question[i][t_y] != '*') return false;
+      }
+    }
+  } else if (['up', 'down'].includes(dir)) {
+    if (f_y > s_y) next_dir = 'left'
+    else if (f_y < s_y) next_dir = 'right'
+
+    if (next_dir == 'left') {
+      for (let i = t_y; i >= s_y; i--) {
+        if (question[t_x][i] && question[t_x][i] != '*') return false;
+      }
+    } else if (next_dir == 'right') {
+      for (let i = t_y; i <= s_y; i++) {
+        if (question[t_x][i] && question[t_x][i] != '*') return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 function findCourse(check_arr) {
   const target_coordinate = check_arr ? check_arr : answer_coordinate;
 
@@ -211,21 +244,34 @@ function findCourse(check_arr) {
         }
 
         let need_change = false;
+
         if (target_dir == "left") {
-          if (target_y < second_y) need_change = true;
+          if (target_y == second_y && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
+            console.log(`need_change`, 'left')
+            need_change = true;
+          }
           target_y = first_y - y_move;
         } else if (target_dir == "up") {
-          if (target_x < second_x) need_change = true;
+          if (target_x == second_x && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
+            console.log(`need_change`, 'up')
+            need_change = true;
+          }
           target_x = first_x - x_move;
         } else if (target_dir == "right") {
-          if (target_y > second_y) need_change = true;
+          if (target_y == second_y && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
+            console.log(`need_change`, 'right')
+            need_change = true;
+          }
           target_y = first_y + y_move;
         } else if (target_dir == "down") {
-          if (target_x > second_x) need_change = true;
+          if (target_x == second_x && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
+            console.log(`need_change`, 'down')
+            need_change = true;
+          }
           target_x = first_x + x_move;
         }
 
-        // console.log(dir1, target_dir, target_x, target_y, x_move, y_move);
+        console.log(dir1, target_dir, target_x, target_y, second_x, second_y, x_move, y_move);
         if (
           !need_change &&
           question[target_x] &&
@@ -325,16 +371,23 @@ function findCourse(check_arr) {
           change_dir_cnt++;
 
           if (["left", "right"].includes(target_dir)) {
-            if (target_dir == "left") target_y++;
-            else if (target_dir == "right") target_y--;
+            if (target_dir == "left") {
+              if (target_y < 0) target_y++;
+            } else if (target_dir == "right") {
+              if (target_y > question[0].length - 1) target_y--;
+            }
             if (target_x > second_x) {
               target_dir = "up";
             } else if (target_x < second_x) {
               target_dir = "down";
             }
+
           } else if (["up", "down"].includes(target_dir)) {
-            if (target_dir == "up") target_x++;
-            else if (target_dir == "down") target_x--;
+            if (target_dir == "up") {
+              if (target_x < 0) target_x++;
+            } else if (target_dir == "down") {
+              if (target_x > question.length - 1) target_x--;
+            }
             if (target_y > second_y) {
               target_dir = "left";
             } else if (target_y < second_y) {
@@ -344,7 +397,7 @@ function findCourse(check_arr) {
 
           if (!target_dir) break;
         }
-        if (check_cnt > 100) {
+        if (check_cnt > 20) {
           right_answer = true;
         }
         check_cnt++;
