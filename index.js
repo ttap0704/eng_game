@@ -1,16 +1,105 @@
+// 게임 진행
+// 1. 선이 이동할 수 있는 경로의
+// 2. 맞는 뜻, 단어를 클릭하여 정답을 맞춤
+// 3. 더 이상 맞출 수 있는 정답이 없을 경우, 또는 모든 문제를 맞출 경우 처음부터 다시 시작
+
+// 게임 규칙
+// 1. 선은 2번 이상 꺾을 수 없음
+// 2. 붙어 있는 맞는 뜻, 단어는 정답으로 인정
+
+// 알고리즘 설명 (함수)
+// ** shuffle **
+//  - 문제의 수만큼 랜덤 수를 만들어 배열로 반환
+// ** makeQuestionArray **
+//  - shuffle에서 받은 배열을 토대로 문제를 랜덤으로 만듬
+//  - 각 첫 번째, 마지막 열과 행은 *로 표기됨
+//  - 여기서 *은 이동할 수 있는 경로
+// ** checkPossibleQuetions **
+//  - 만든 문제를 검증하여 맞출 수 있는 경우의 수를 반환
+//  - 처음 문제를 만들 때, 초기에 맞출 수 있는 정답의 수를 정하여, 문제를 재설정 하는데 사용
+//  - 문제를 맞출 때 마다 검증하여, 맞출 수 있는 문제의 수를 알 수 있음
+// ** checkAnswer **
+//  - 첫 번째, 두 번째 클릭한 단어와 뜻이 정답인지 체크하는 함수
+// ** findCourse **
+//  - 정답의 경로를 찾는 함수
+//  - [오른쪽, 왼쪽, 아래, 위] 순서대로 탐색하여, 해당 지점이 '*'일 시, 자신을 다시 호출하는 재귀함수
+//    - 다시 호출할 때 x, y값을 새롭게 전달하여 자동으로 다음 지점을 방문할 수 있도록 설정
+//    - 해당 지점이 '*'이라면 계속 탐색, 아니라면 정답 유무를 판단하여
+//    - 정답이라면 이동 경로 배열을 반환, 아니라면 false를 반환
+//    - 세 번이상 꺾일 경우에도 false를 반환
+//    - 각 경로에서 하나라도 이동 경로를 반환한다면 정답으로 인정, 아니라면 false를 반환하여 정답 실패 처리
+//  - 경로가 있으면 바로 반환하기 때문에, 최단 경로는 보장할 수 없음
+// ** setRightAnswer **
+//  - findCourse에서 경로를 반환 했을 시, view에 이동 한 경로를 출력해 줌
+//  - 경로 출력 후 해당 지점을 *로 치환하고 새로운 문제 배열을 반환하여 문제를 재설정
+
+// 6x4 or 4x6
+// 처음 설정 > 3
+// const arr = [
+//   {word: "사과", mean: "apple"},
+//   {word: "더하기", mean: "add"},
+//   {word: "컵", mean: "cup"},
+//   {word: "마우스", mean: "mouse"},
+//   {word: "남자", mean: "man"},
+//   {word: "여자", mean: "woman"},
+//   {word: "소년", mean: "boy"},
+//   {word: "소녀", mean: "girl"},
+//   {word: "가족", mean: "family"},
+//   {word: "집", mean: "home"},
+//   {word: "가다", mean: "go"},
+//   {word: "뒤", mean: "back"},
+// ];
+
+// 6x6
+// 처음 설정 > 7
+// const arr = [
+//   {word: "사과", mean: "apple"},
+//   {word: "더하기", mean: "add"},
+//   {word: "컵", mean: "cup"},
+//   {word: "마우스", mean: "mouse"},
+//   {word: "남자", mean: "man"},
+//   {word: "여자", mean: "woman"},
+//   {word: "소년", mean: "boy"},
+//   {word: "소녀", mean: "girl"},
+//   {word: "가족", mean: "family"},
+//   {word: "집", mean: "home"},
+//   {word: "가다", mean: "go"},
+//   {word: "뒤", mean: "back"},
+//   {word: "핸드폰", mean: "phone"},
+//   {word: "커피", mean: "coffee"},
+//   {word: "의자", mean: "chair"},
+//   {word: "침대", mean: "bed"},
+//   {word: "코트", mean: "coat"},
+//   {word: "바지", mean: "pants"},
+// ];
+
+// 8x6 or 6x8
+// 처음 설정 > 9
 const arr = [
-  { word: "사과", mean: "apple" },
-  { word: "더하기", mean: "add" },
-  { word: "컵", mean: "cup" },
-  { word: "마우스", mean: "mouse" },
-  { word: "남자", mean: "man" },
-  { word: "여자", mean: "woman" },
-  { word: "소년", mean: "boy" },
-  { word: "소녀", mean: "girl" },
-  { word: "가족", mean: "family" },
-  { word: "집", mean: "home" },
-  { word: "가다", mean: "go" },
-  { word: "뒤", mean: "back" },
+  {word: "사과", mean: "apple"},
+  {word: "더하기", mean: "add"},
+  {word: "컵", mean: "cup"},
+  {word: "마우스", mean: "mouse"},
+  {word: "남자", mean: "man"},
+  {word: "여자", mean: "woman"},
+  {word: "소년", mean: "boy"},
+  {word: "소녀", mean: "girl"},
+  {word: "가족", mean: "family"},
+  {word: "집", mean: "home"},
+  {word: "가다", mean: "go"},
+  {word: "뒤", mean: "back"},
+  {word: "핸드폰", mean: "phone"},
+  {word: "커피", mean: "coffee"},
+  {word: "의자", mean: "chair"},
+  {word: "침대", mean: "bed"},
+  {word: "코트", mean: "coat"},
+  {word: "바지", mean: "pants"},
+  {word: "신발", mean: "shoes"},
+  {word: "냉장고", mean: "refrigerator"},
+  {word: "강아지", mean: "dog"},
+  {word: "고양이", mean: "cat"},
+  {word: "대통령", mean: "president"},
+  {word: "병원", mean: "hospital"},
 ];
 
 let answer = [];
@@ -18,6 +107,7 @@ let answer_arr = [];
 let answer_ids = [];
 let answer_coordinate = [];
 let question = [];
+let question_answer_ar = [];
 let ok_cnt = 0;
 
 function shuffle(array) {
@@ -28,54 +118,39 @@ function shuffle(array) {
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    [array[currentIndex], array[randomIndex]] = [
-      array[randomIndex],
-      array[currentIndex],
-    ];
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
   }
 
   return array;
 }
 
-function getEmptyArray(leng) {
-  let arr = [];
-  for (i = 0; i < leng + 2; i++) {
-    arr.push("*");
-  }
-
-  return arr;
-}
-
-function makeQuestionArray(arr, random_keys_arr, max) {
+function makeQuestionArray(arr, random_keys_arr, max_y, max_x) {
   let quetion_arr = [];
-  for (let i = 0, leng = arr.length / 2; i < leng; i++) {
+  console.log(random_keys_arr);
+  for (let i = 0, leng = max_x + 2; i < leng; i++) {
     let row = [];
-    for (let j = 0, jleng = max + 2; j < jleng; j++) {
-      if (j == 0 || j == max + 1) {
+    for (let j = 0, jleng = max_y + 2; j < jleng; j++) {
+      if (i == 0 || i == max_x + 1 || j == 0 || j == max_y + 1) {
         row.push("*");
       } else {
-        const cur_idx = random_keys_arr[j - 1 + i * max];
+        const cur_idx = random_keys_arr[j - 1 + (i - 1) * max_y];
         const target_idx = Math.abs(Math.ceil(cur_idx / 2 - 0.5));
         const target = arr[target_idx];
 
         if (cur_idx % 2 == 0) {
-          const find_mean_idx = answer_arr.findIndex(
-            (item) => item.mean == target.mean
-          );
+          const find_mean_idx = answer_arr.findIndex((item) => item.mean == target.mean);
           if (find_mean_idx >= 0) {
-            answer_arr[find_mean_idx].word_idx = [i + 1, j];
+            answer_arr[find_mean_idx].word_idx = [i, j];
           } else {
-            answer_arr.push({ ...target, word_idx: [i + 1, j] });
+            answer_arr.push({...target, word_idx: [i, j]});
           }
           row.push(target.word);
         } else {
-          const find_word_idx = answer_arr.findIndex(
-            (item) => item.word == target.word
-          );
+          const find_word_idx = answer_arr.findIndex((item) => item.word == target.word);
           if (find_word_idx >= 0) {
-            answer_arr[find_word_idx].mean_idx = [i + 1, j];
+            answer_arr[find_word_idx].mean_idx = [i, j];
           } else {
-            answer_arr.push({ ...target, mean_idx: [i + 1, j] });
+            answer_arr.push({...target, mean_idx: [i, j]});
           }
           row.push(target.mean);
         }
@@ -83,22 +158,17 @@ function makeQuestionArray(arr, random_keys_arr, max) {
     }
     quetion_arr.push(row);
   }
-
-  quetion_arr.unshift(getEmptyArray(max));
-  quetion_arr.push(getEmptyArray(max));
-  return { quetion_arr, answer_arr };
+  return {quetion_arr, answer_arr};
 }
 
-function checkPossibleQuetions(check_arr) {
+function checkPossibleQuetions(tmp_question, check_arr) {
   let possible_cnt = 0;
-  const answer_arr = check_arr.map((item) => [
-    [...item.word_idx],
-    [...item.mean_idx],
-  ]);
-
+  const answer_arr = check_arr.map((item) => [[...item.word_idx], [...item.mean_idx]]);
   for (const idx_arr of answer_arr) {
-    const possible_res = findCourse(idx_arr);
-    if (possible_res) possible_cnt++;
+    const possible_res = findCourse(idx_arr[0][0], idx_arr[0][1], 0, 0, tmp_question, idx_arr[1][0], idx_arr[1][1]);
+    if (possible_res) {
+      possible_cnt++;
+    }
   }
 
   return possible_cnt;
@@ -106,315 +176,115 @@ function checkPossibleQuetions(check_arr) {
 
 function checkAnswer() {
   const check_item = arr.find((item) => {
-    return (
-      (item.word == answer[0] && item.mean == answer[1]) ||
-      (item.word == answer[1] && item.mean == answer[0])
-    );
+    return (item.word == answer[0] && item.mean == answer[1]) || (item.word == answer[1] && item.mean == answer[0]);
   });
 
   if (check_item) return true;
   else return false;
 }
 
-function checkLine(dir, t_x, t_y, f_x, f_y, s_x, s_y) {
-  let next_dir = '';
-  if (['left', 'right'].includes(dir)) {
-    if (f_x > s_x) next_dir = "up";
-    else if (f_x < s_x) next_dir = "down";
+function setRightAnswer(move_arr) {
+  if (move_arr.length > 1) {
+    for (let i = 1, leng = move_arr.length; i < leng; i++) {
+      const move_splited = move_arr[i].split("_");
+      const move_x = move_splited[0];
+      const move_y = move_splited[1];
+      const move_dir = move_splited[2];
+      const prev_dir = move_arr[i - 1].split("_")[2];
 
-    if (next_dir == 'up') {
-      for (let i = t_x; i <= s_x; i++) {
-        if (question[i] && question[i][t_y] != '*') return false;
-      }
-    } else if (next_dir == 'down') {
-      for (let i = t_x; i >= s_x; i--) {
-        if (question[i] && question[i][t_y] != '*') return false;
-      }
-    }
-  } else if (['up', 'down'].includes(dir)) {
-    if (f_y > s_y) next_dir = 'left'
-    else if (f_y < s_y) next_dir = 'right'
+      const question_number = Number(move_x) * question[0].length + Number(move_y);
 
-    if (next_dir == 'left') {
-      for (let i = t_y; i >= s_y; i--) {
-        if (question[t_x][i] && question[t_x][i] != '*') return false;
+      const target_el = document.getElementById(`question_${question_number}`).children[0];
+
+      const deco_el = document.createElement("div");
+      const deco_children_1 = document.createElement("div");
+      const deco_children_2 = document.createElement("div");
+
+      switch (`${prev_dir}_${move_dir}`) {
+        case "right_right":
+        case "left_left": {
+          deco_children_1.style.width = "100%";
+          deco_children_1.style.height = "2px";
+          break;
+        }
+        case "up_up":
+        case "down_down": {
+          deco_children_1.style.width = "2px";
+          deco_children_1.style.height = "100%";
+          break;
+        }
+        case "left_up":
+        case "down_right": {
+          deco_children_1.style.width = "50%";
+          deco_children_1.style.height = "2px";
+          deco_children_1.style.left = "75%";
+          deco_children_2.style.width = "2px";
+          deco_children_2.style.height = "50%";
+          deco_children_2.style.top = "25%";
+          break;
+        }
+        case "right_up":
+        case "down_left": {
+          deco_children_1.style.width = "50%";
+          deco_children_1.style.height = "2px";
+          deco_children_1.style.left = "25%";
+          deco_children_2.style.width = "2px";
+          deco_children_2.style.height = "50%";
+          deco_children_2.style.top = "25%";
+          break;
+        }
+        case "left_down":
+        case "up_right": {
+          deco_children_1.style.width = "50%";
+          deco_children_1.style.height = "2px";
+          deco_children_1.style.left = "75%";
+          deco_children_2.style.width = "2px";
+          deco_children_2.style.height = "50%";
+          deco_children_2.style.top = "75%";
+          break;
+        }
+        case "right_down":
+        case "up_left": {
+          deco_children_1.style.width = "50%";
+          deco_children_1.style.height = "2px";
+          deco_children_1.style.left = "25%";
+          deco_children_2.style.width = "2px";
+          deco_children_2.style.height = "50%";
+          deco_children_2.style.top = "75%";
+          break;
+        }
       }
-    } else if (next_dir == 'right') {
-      for (let i = t_y; i <= s_y; i++) {
-        if (question[t_x][i] && question[t_x][i] != '*') return false;
-      }
+      deco_children_1.style.backgroundColor = "red";
+      deco_children_2.style.backgroundColor = "red";
+      deco_el.append(deco_children_1);
+      deco_el.append(deco_children_2);
+      target_el.append(deco_el);
     }
   }
 
-  return true;
-}
-
-function findCourse(check_arr) {
-  const target_coordinate = check_arr ? check_arr : answer_coordinate;
-
-  const first_answer =
-    question[target_coordinate[0][0]][target_coordinate[0][1]];
-  const second_answer =
-    question[target_coordinate[1][0]][target_coordinate[1][1]];
-
-  let first_x = target_coordinate[0][0];
-  let first_y = target_coordinate[0][1];
-  let second_x = target_coordinate[1][0];
-  let second_y = target_coordinate[1][1];
-
-  const around = {
-    first_left: question[first_x][first_y - 1],
-    first_up: question[first_x - 1][first_y],
-    first_right: question[first_x][first_y + 1],
-    first_down: question[first_x + 1][first_y],
-    second_left: question[second_x][second_y - 1],
-    second_up: question[second_x - 1][second_y],
-    second_right: question[second_x][second_y + 1],
-    second_down: question[second_x + 1][second_y],
-  };
-
-  const dir_arr = ["left", "up", "right", "down"];
-  const num_arr = ["first", "second"];
-
-  for (const dir1 of dir_arr) {
-    let course_arr = [];
-    if (
-      [second_x - 1, second_x + 1, second_x].includes(first_x) &&
-      [second_y - 1, second_x + 1, second_y].includes(first_y)
-    ) {
-      // 붙어있는 정답 체크
-      const check_near_item = arr.find((item) => {
-        return (
-          ([
-            around["first_left"],
-            around["first_up"],
-            around["first_right"],
-            around["first_down"],
-          ].includes(item.word) &&
-            first_answer == item.mean) ||
-          ([
-            around["first_left"],
-            around["first_up"],
-            around["first_right"],
-            around["first_down"],
-          ].includes(item.mean) &&
-            first_answer == item.word)
-        );
-      });
-      if (check_near_item) {
-        if (check_arr) {
-          return true;
-        } else {
-          setRightAnswer();
-        }
-        return;
-      }
-    }
-    console.log(question.length, question[0].length);
-
-    // for (const target_num of ["first", "second"]) {
-    let target = around[`first_${dir1}`];
-    if (target == "*") {
-      let x_move = 0;
-      let y_move = 0;
-      let check_cnt = 0;
-      let change_dir_cnt = 0;
-      let target_dir = dir1;
-      let changed_dir = "";
-      let right_answer = false;
-
-      let target_x = first_x;
-      let target_y = first_y;
-
-      let check_border_x = false;
-      let check_border_y = false;
-      if ([1, question.length - 2].includes(second_x)) {
-        check_border_x = true;
-      }
-      if ([1, question[0].length - 2].includes(second_y)) {
-        check_border_y = true;
-      }
-
-      while (!right_answer) {
-        let checked_answer = "";
-        if (["left", "right"].includes(target_dir)) {
-          y_move++;
-        } else {
-          x_move++;
-        }
-
-        let need_change = false;
-
-        if (target_dir == "left") {
-          if (target_y == second_y && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
-            console.log(`need_change`, 'left')
-            need_change = true;
-          }
-          target_y = first_y - y_move;
-        } else if (target_dir == "up") {
-          if (target_x == second_x && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
-            console.log(`need_change`, 'up')
-            need_change = true;
-          }
-          target_x = first_x - x_move;
-        } else if (target_dir == "right") {
-          if (target_y == second_y && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
-            console.log(`need_change`, 'right')
-            need_change = true;
-          }
-          target_y = first_y + y_move;
-        } else if (target_dir == "down") {
-          if (target_x == second_x && checkLine(target_dir, target_x, target_y, first_x, first_y, second_x, second_y)) {
-            console.log(`need_change`, 'down')
-            need_change = true;
-          }
-          target_x = first_x + x_move;
-        }
-
-        console.log(dir1, target_dir, target_x, target_y, second_x, second_y, x_move, y_move);
-        if (
-          !need_change &&
-          question[target_x] &&
-          question[target_x][target_y] &&
-          question[target_x][target_y] == "*"
-        ) {
-          target = question[target_x][target_y];
-
-          if (dir1 == target_dir) {
-            course_arr.push({ x: target_x, y: target_y, dir: dir1 });
-          } else {
-            const check_idx = course_arr.findIndex(
-              (item) => item.dir == `${dir1}_${target_dir}`
-            );
-            if (check_idx >= 0) {
-              course_arr.push({
-                x: target_x,
-                y: target_y,
-                dir: target_dir,
-              });
-            } else {
-              course_arr.push({
-                x: target_x,
-                y: target_y,
-                dir: `${dir1}_${target_dir}`,
-              });
-            }
-          }
-
-          let answer_dir = "";
-
-          if (change_dir_cnt < 2) {
-            if (
-              question[target_x][target_y - 1] &&
-              second_answer == question[target_x][target_y - 1]
-            ) {
-              answer_dir = "left";
-              checked_answer = question[target_x][target_y - 1];
-            }
-
-            if (
-              question[target_x - 1] &&
-              question[target_x - 1][target_y] &&
-              second_answer == question[target_x - 1][target_y]
-            ) {
-              answer_dir = "up";
-              checked_answer = question[target_x - 1][target_y];
-            }
-
-            if (
-              question[target_x][target_y + 1] &&
-              second_answer == question[target_x][target_y + 1]
-            ) {
-              answer_dir = "right";
-              checked_answer = question[target_x][target_y + 1];
-            }
-
-            if (
-              question[target_x + 1] &&
-              question[target_x + 1][target_y] &&
-              second_answer == question[target_x + 1][target_y]
-            ) {
-              answer_dir = "down";
-              checked_answer = question[target_x + 1][target_y];
-            }
-          } else {
-            if (question[target_x][target_y] != "*") {
-              answer_dir = target_dir;
-              checked_answer = question[target_x][target_y];
-            }
-          }
-
-          if (checked_answer.length > 0) {
-            if (change_dir_cnt <= 2) {
-              if (check_arr) {
-                console.log(check_arr);
-                return true;
-              } else {
-                course_arr.push({
-                  x: target_x,
-                  y: target_y,
-                  dir: `${target_dir}_${answer_dir}`,
-                });
-
-                right_answer = true;
-                setRightAnswer();
-                console.log(course_arr, checked_answer, change_dir_cnt);
-                return;
-              }
-            } else {
-              right_answer = true;
-              console.log(course_arr, checked_answer, change_dir_cnt, "??");
-              break;
-            }
-          }
-        } else {
-          change_dir_cnt++;
-
-          if (["left", "right"].includes(target_dir)) {
-            if (target_dir == "left") {
-              if (target_y < 0) target_y++;
-            } else if (target_dir == "right") {
-              if (target_y > question[0].length - 1) target_y--;
-            }
-            if (target_x > second_x) {
-              target_dir = "up";
-            } else if (target_x < second_x) {
-              target_dir = "down";
-            }
-
-          } else if (["up", "down"].includes(target_dir)) {
-            if (target_dir == "up") {
-              if (target_x < 0) target_x++;
-            } else if (target_dir == "down") {
-              if (target_x > question.length - 1) target_x--;
-            }
-            if (target_y > second_y) {
-              target_dir = "left";
-            } else if (target_y < second_y) {
-              target_dir = "right";
-            }
-          }
-
-          if (!target_dir) break;
-        }
-        if (check_cnt > 20) {
-          right_answer = true;
-        }
-        check_cnt++;
-      }
-    }
-    // }
-  }
-
-  if (check_arr) return false;
-}
-
-function setRightAnswer() {
-  alert("정답입니다!");
   ok_cnt++;
   question[answer_coordinate[0][0]][answer_coordinate[0][1]] = "*";
   question[answer_coordinate[1][0]][answer_coordinate[1][1]] = "*";
-  setQuestion();
+  check_count = checkPossibleQuetions(question, answer_arr);
+  console.log(check_count);
+  setTimeout(() => {
+    if (ok_cnt == arr.length) {
+      alert("정답을 모두 맞혔습니다!");
+      const restart = confirm("다시 진행 하시겠습니까?");
+      if (restart) {
+        init(arr, 8, 6);
+      }
+    } else {
+      alert("정답입니다!");
+      if (check_count == 0 && ok_cnt < arr.length) {
+        const restart = confirm("맞출 수 있는 정답이 없습니다.\r\n다시 시작 하시겠습니까?");
+        if (restart) {
+          init(arr, 8, 6);
+        }
+      }
+    }
+    setQuestion();
+  }, 250);
 }
 
 function setQuestion() {
@@ -428,16 +298,24 @@ function setQuestion() {
     for (let j = 0, jleng = x.length; j < jleng; j++) {
       const y = x[j];
       const cell = document.createElement("div");
-      cell.classList.add("cell");
+      const cell_deco = document.createElement("div");
+
       cell.setAttribute("id", `question_${j + i * x.length}`);
       cell.innerHTML = y;
 
+      cell.classList.add("cell");
       row.append(cell);
       if (y != "*") {
+        const target_deco = document.createElement("div");
+        target_deco.classList.add("target_deco");
         cell.classList.add("target");
+        cell.append(target_deco);
         cell.addEventListener("click", () => {
           onClickTarget(i, j, j + i * x.length);
         });
+      } else {
+        cell.append(cell_deco);
+        cell_deco.classList.add("cell_deco");
       }
     }
 
@@ -445,18 +323,177 @@ function setQuestion() {
   }
 }
 
-function init(arr, max) {
-  console.log(wrap)
+function init(arr, max_y, max_x) {
   let check_count = 0;
-  while (!(check_count > 3)) {
+  while (!(check_count > 9)) {
     const random_keys_arr = shuffle([...Array(arr.length * 2).keys()]);
-    const question_res = makeQuestionArray(arr, random_keys_arr, max);
+    const question_res = makeQuestionArray(arr, random_keys_arr, max_y, max_x);
     question = question_res.quetion_arr;
     const check_arr = question_res.answer_arr;
-    check_count = checkPossibleQuetions(check_arr);
+    check_count = checkPossibleQuetions(question, check_arr);
+    console.log(check_count);
   }
-  console.log(check_count);
+  alert("시작하세요!");
   setQuestion();
+}
+
+function findCourse(next_x, next_y, direction, trun_num, tmp_question, second_x, second_y, dir_arr) {
+  const second_answer_x = second_x ? second_x : answer_coordinate[1][0];
+  const second_answer_y = second_y ? second_y : answer_coordinate[1][1];
+  const target_question = tmp_question ? tmp_question : question;
+  if (trun_num > 2) {
+    return false;
+  } else {
+    if (0 <= next_x && next_x < question.length && 0 <= next_y && next_y < question[0].length) {
+      if (direction == 0) {
+        right_answer = findCourse(next_x, next_y + 1, 1, trun_num, tmp_question, second_x, second_y, [
+          `${next_x}_${next_y}_right`,
+        ]);
+        if (right_answer) {
+          return right_answer;
+        }
+        right_answer = findCourse(next_x, next_y - 1, 2, trun_num, tmp_question, second_x, second_y, [
+          `${next_x}_${next_y}_left`,
+        ]);
+        if (right_answer) {
+          return right_answer;
+        }
+        right_answer = findCourse(next_x + 1, next_y, 3, trun_num, tmp_question, second_x, second_y, [
+          `${next_x}_${next_y}_down`,
+        ]);
+        if (right_answer) {
+          return right_answer;
+        }
+        right_answer = findCourse(next_x - 1, next_y, 4, trun_num, tmp_question, second_x, second_y, [
+          `${next_x}_${next_y}_up`,
+        ]);
+        if (right_answer) {
+          return right_answer;
+        }
+        return false;
+      } else if (direction == 1) {
+        if (target_question[next_x][next_y] == "*") {
+          right_answer = findCourse(next_x, next_y + 1, 1, trun_num, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_right`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x + 1, next_y, 3, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_down`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x - 1, next_y, 4, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_up`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+          return false;
+        } else if (target_question[second_answer_x][second_answer_y] == target_question[next_x][next_y]) {
+          return dir_arr;
+        }
+      } else if (direction == 2) {
+        if (target_question[next_x][next_y] == "*") {
+          right_answer = findCourse(next_x, next_y - 1, 2, trun_num, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_left`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x + 1, next_y, 3, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_down`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x - 1, next_y, 4, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_up`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+          return false;
+        } else if (target_question[second_answer_x][second_answer_y] == target_question[next_x][next_y]) {
+          return dir_arr;
+        }
+      } else if (direction == 3) {
+        if (target_question[next_x][next_y] == "*") {
+          right_answer = findCourse(next_x, next_y + 1, 1, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_right`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x, next_y - 1, 2, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_left`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x + 1, next_y, 3, trun_num, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_down`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          return false;
+        } else if (target_question[second_answer_x][second_answer_y] == target_question[next_x][next_y]) {
+          return dir_arr;
+        }
+      } else if (direction == 4) {
+        if (target_question[next_x][next_y] == "*") {
+          right_answer = findCourse(next_x, next_y + 1, 1, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_right`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x, next_y - 1, 2, trun_num + 1, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_left`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          right_answer = findCourse(next_x - 1, next_y, 4, trun_num, tmp_question, second_x, second_y, [
+            ...dir_arr,
+            `${next_x}_${next_y}_up`,
+          ]);
+          if (right_answer) {
+            return right_answer;
+          }
+
+          return false;
+        } else if (target_question[second_answer_x][second_answer_y] == target_question[next_x][next_y]) {
+          return dir_arr;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
 }
 
 function onClickTarget(x, y, question_number) {
@@ -470,14 +507,21 @@ function onClickTarget(x, y, question_number) {
   answer_ids.push(question_number);
   answer_coordinate.push([x, y]);
 
-  const el = document.getElementById(`question_${question_number}`);
+  const el = document.getElementById(`question_${question_number}`).children[0];
   el.style.border = "1.5px solid red";
 
   setTimeout(() => {
     if (answer.length == 2) {
       const check = checkAnswer();
       if (check) {
-        findCourse();
+        const target_x = answer_coordinate[0][0];
+        const target_y = answer_coordinate[0][1];
+        const check_answer = findCourse(target_x, target_y, 0, 0);
+        if (check_answer) {
+          setRightAnswer(check_answer);
+        } else {
+          alert("이동할 수 없는 경로입니다.");
+        }
       } else {
         alert("정답이 아닙니다.");
       }
@@ -485,11 +529,11 @@ function onClickTarget(x, y, question_number) {
       answer = [];
       answer_coordinate = [];
       for (const number of answer_ids) {
-        const before = document.getElementById(`question_${number}`);
+        const before = document.getElementById(`question_${number}`).children[0];
         before.style.border = 0;
       }
     }
   }, 0);
 }
 
-init(arr, 4);
+init(arr, 8, 6);
