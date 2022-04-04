@@ -47,8 +47,8 @@ body {
 }
 
 #wrap > .row > .cell {
-  width: 5rem;
-  height: 7.5rem;
+  width: 6rem;
+  height: 9rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +64,7 @@ body {
   width: 100%;
   height: 100%;
   background-color: #f0f0f0;
-  border: none;
+  border: 1px solid #f0f0f0;
   display: flex;
   flex-wrap: wrap;
 }
