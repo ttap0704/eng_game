@@ -1,0 +1,22 @@
+{
+  "name": "eng_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttap0704/eng_game.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ttap0704/eng_game/issues"
+  },
+  "homepage": "https://github.com/ttap0704/eng_game#readme",
+  "dependencies": {
+    "three": "^0.140.0"
+  }
+}

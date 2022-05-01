@@ -73,6 +73,10 @@
 //   {word: "바지", mean: "pants"},
 // ];
 
+import * as THREE from "three";
+
+const scene = new THREE.Scene();
+
 // 8x6 or 6x8
 // 처음 설정 > 9
 const arr = [
