@@ -18,5 +18,6 @@
   "homepage": "https://github.com/ttap0704/eng_game#readme",
   "dependencies": {
     "three": "^0.140.0"
-  }
+  },
+  "type": "module"
 }

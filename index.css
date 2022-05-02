@@ -11,6 +11,54 @@ body {
   background-color: #f0f0f0;
 }
 
+#level_wrap {
+  width: 60rem;
+  height: 30rem;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#level_wrap > h1 {
+  font-size: 3rem;
+  text-align: center;
+}
+
+#level_wrap > #level_box {
+  display: flex;
+  height: 100%;
+  gap: 0.5rem;
+}
+#level_wrap > #level_box > div {
+  width: calc(60rem / 3);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#level_wrap > #level_box > div:hover {
+  opacity: 0.65;
+}
+
+#level_wrap > #level_box > div:first-of-type {
+  background-color: #ccf274;
+}
+
+#level_wrap > #level_box > div:nth-of-type(2) {
+  background-color: #8adb5e;
+}
+
+#level_wrap > #level_box > div:last-of-type {
+  background-color: #6cf96b;
+}
+
 #wrap {
   width: auto;
   height: auto;
@@ -18,6 +66,35 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+#wrap > #hint_wrap {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+#wrap > #hint_wrap > #hint_text {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+#wrap > #hint_wrap > #hint_button {
+  border: 1px solid red;
+  background-color: red;
+  color: #fff;
+  width: 5rem;
+  height: 3rem;
+  border-radius: 12%;
+  cursor: pointer;
+  transition: 0.45s;
+}
+
+#wrap > #hint_wrap > #hint_button:hover {
+  opacity: 0.65;
 }
 
 #wrap > .row {
@@ -30,7 +107,7 @@ body {
 }
 
 #wrap > .row:last-of-type > .cell {
-  border: none;
+  border: none !important;
 }
 
 #wrap > .row:not(:last-of-type) > .cell {
@@ -55,6 +132,11 @@ body {
   transition: 0.25s ease-in-out;
   position: relative;
   border-right: 1px solid #e3e3e3;
+}
+
+#wrap > .row > .cell > .hint {
+  transition: 0.25s ease-in-out;
+  border: 1px solid blue;
 }
 
 #wrap > .row > .cell > .cell_deco {
