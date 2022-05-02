@@ -8,7 +8,16 @@
     <title>Document</title>
   </head>
   <body>
-    <div id="wrap"></div>
+    <div id="level_wrap">
+      <h1>난이도 선택</h1>
+      <div id="level_box">
+        <div onclick="onClickLevel(1)">Level .1</div>
+        <div onclick="onClickLevel(2)">Level .2</div>
+        <div onclick="onClickLevel(3)">Level. 3</div>
+      </div>
+    </div>
+    <div id="wrap" style="display: none"></div>
+    <script type="text/javascript" src="./tools/common.js"></script>
     <script type="text/javascript" src="./index.js"></script>
   </body>
 </html>
